@@ -45,8 +45,6 @@ type logger struct {
 	LogFileName string
 
 	Lock sync.Locker
-
-	LogHandle
 }
 
 func (l *logger) SetMaxCache(n int) (err error) {
