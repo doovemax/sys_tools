@@ -9,7 +9,12 @@ import (
 func main() {
 	fmt.Println(clog.Clog)
 	clog.Clog.Fatal("this is a test")
+	clog.Clog.Error("this is a test")
+	clog.Clog.Warn("this is a test")
+	clog.Clog.Info("this is a test")
+	clog.Clog.Debug("this is a test")
+	//clog.Clog.Panic("this is a test")
 
-	time.Sleep(1)
+	time.Sleep(time.Second * 10)
 
 }
