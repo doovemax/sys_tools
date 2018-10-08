@@ -1,6 +1,7 @@
-package log
+package clog
 
 import (
+	"log"
 	"sync"
 )
 
@@ -9,7 +10,11 @@ var (
 )
 
 func init() {
-	Clog.Out = make(chan message, Clog.MaxCache)
+	Clog.Out = make(chan *message, Clog.MaxCache)
+	err := Clog.Run()
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func New() *logger {
@@ -23,5 +28,6 @@ func New() *logger {
 		LogPath:       "/tmp/",
 		LogFileName:   "clog.log",
 		Lock:          &sync.Mutex{},
+		Timezone:      "Local",
 	}
 }

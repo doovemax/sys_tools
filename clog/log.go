@@ -1,6 +1,7 @@
-package log
+package clog
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -44,7 +45,8 @@ type logger struct {
 	// 日志文件名称
 	LogFileName string
 
-	Lock sync.Locker
+	Lock     sync.Locker
+	Timezone string
 }
 
 func (l *logger) SetMaxCache(n int) (err error) {
@@ -56,54 +58,55 @@ func (l *logger) SetMaxCache(n int) (err error) {
 
 }
 
-func (l *logger) Panic(m string) (err error) {
-	l.Out <- &message{
-		LogLevel: PanicLevel,
-		Time:     time.Now(),
-		Msg:      m,
-	}
+func (l *logger) Run() (err error) {
+	go logout(l)
+	return
+}
+
+func (l *logger) Panic(v ...interface{}) (err error) {
+	panic(v)
 	return
 
 }
 
-func (l *logger) Fatal(m string) (err error) {
+func (l *logger) Fatal(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: FatalLevel,
 		Time:     time.Now(),
-		Msg:      m,
+		Msg:      fmt.Sprint(v...),
 	}
 	return
 }
 
-func (l *logger) Error(m string) (err error) {
+func (l *logger) Error(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: ErrorLevel,
 		Time:     time.Now(),
-		Msg:      m,
+		Msg:      fmt.Sprint(v...),
 	}
 	return
 }
-func (l *logger) Warn(m string) (err error) {
+func (l *logger) Warn(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: WarnLevel,
 		Time:     time.Now(),
-		Msg:      m,
+		Msg:      fmt.Sprint(v...),
 	}
 	return
 }
-func (l *logger) Info(m string) (err error) {
+func (l *logger) Info(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: InfoLevel,
 		Time:     time.Now(),
-		Msg:      m,
+		Msg:      fmt.Sprint(v...),
 	}
 	return
 }
-func (l *logger) Debug(m string) (err error) {
+func (l *logger) Debug(v ...interface{}) (err error) {
 	l.Out <- &message{
 		Time:     time.Now(),
 		LogLevel: DebugLevel,
-		Msg:      m,
+		Msg:      fmt.Sprint(v...),
 	}
 	return
 }
