@@ -1,7 +1,6 @@
 package clog
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -36,8 +35,7 @@ type logger struct {
 	LogLevel Level
 	// 日志格式
 	Format []Formater
-	// 是否开启颜色显示,Default true
-	EnableColor bool
+
 	// 开启日志输出到文件,Default false
 	EnableFileLog bool
 	// 日志文件目录
@@ -73,7 +71,7 @@ func (l *logger) Fatal(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: FatalLevel,
 		Time:     time.Now(),
-		Msg:      fmt.Sprint(v...),
+		Msg:      v,
 	}
 	return
 }
@@ -82,7 +80,7 @@ func (l *logger) Error(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: ErrorLevel,
 		Time:     time.Now(),
-		Msg:      fmt.Sprint(v...),
+		Msg:      v,
 	}
 	return
 }
@@ -90,7 +88,7 @@ func (l *logger) Warn(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: WarnLevel,
 		Time:     time.Now(),
-		Msg:      fmt.Sprint(v...),
+		Msg:      v,
 	}
 	return
 }
@@ -98,7 +96,7 @@ func (l *logger) Info(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: InfoLevel,
 		Time:     time.Now(),
-		Msg:      fmt.Sprint(v...),
+		Msg:      v,
 	}
 	return
 }
@@ -106,7 +104,7 @@ func (l *logger) Debug(v ...interface{}) (err error) {
 	l.Out <- &message{
 		Time:     time.Now(),
 		LogLevel: DebugLevel,
-		Msg:      fmt.Sprint(v...),
+		Msg:      v,
 	}
 	return
 }
@@ -115,5 +113,5 @@ func (l *logger) Debug(v ...interface{}) (err error) {
 type message struct {
 	LogLevel Level
 	Time     time.Time
-	Msg      string
+	Msg      interface{}
 }

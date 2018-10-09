@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/doovemax/sys_tools/clog"
 	"time"
+
+	"github.com/doovemax/sys_tools/clog"
 )
 
 func main() {
@@ -16,5 +17,6 @@ func main() {
 	//clog.Clog.Panic("this is a test")
 
 	time.Sleep(time.Second * 10)
+	fmt.Println()
 
 }
