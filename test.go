@@ -1,22 +1,32 @@
 package main
 
 import (
-	"fmt"
+	"sync"
 	"time"
 
 	"github.com/doovemax/sys_tools/clog"
 )
 
 func main() {
-	fmt.Println(clog.Clog)
-	clog.Clog.Fatal("this is a test")
-	clog.Clog.Error("this is a test")
-	clog.Clog.Warn("this is a test")
-	clog.Clog.Info("this is a test")
-	clog.Clog.Debug("this is a test")
-	//clog.Clog.Panic("this is a test")
+	log := &clog.Logger{
+		Out:           nil,
+		MaxCache:      1000,
+		LogLevel:      clog.DebugLevel,
+		Format:        nil,
+		EnableFileLog: true,
+		LogPath:       "/tmp/",
+		LogFileName:   "clog.log",
+		Lock:          &sync.Mutex{},
+		Timezone:      "Local",
+	}
+	log.Run()
+
+	// log.Fatal("this is a test")
+	log.Error("this is b test")
+	log.Warn("this is c test")
+	log.Info("this is d test")
+	log.Debug("this is e test")
 
 	time.Sleep(time.Second * 10)
-	fmt.Println()
 
 }

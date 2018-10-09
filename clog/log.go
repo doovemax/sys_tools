@@ -26,7 +26,7 @@ const (
 	DebugLevel
 )
 
-type logger struct {
+type Logger struct {
 	// 日志传输管道
 	Out chan *message
 	// 管道缓冲容量
@@ -47,7 +47,7 @@ type logger struct {
 	Timezone string
 }
 
-func (l *logger) SetMaxCache(n int) (err error) {
+func (l *Logger) SetMaxCache(n int) (err error) {
 	l.Lock.Lock()
 	defer l.Lock.Unlock()
 
@@ -56,18 +56,21 @@ func (l *logger) SetMaxCache(n int) (err error) {
 
 }
 
-func (l *logger) Run() (err error) {
+func (l *Logger) Run() (err error) {
+	l.Lock.Lock()
+	l.Out = make(chan *message, l.MaxCache)
+	l.Lock.Unlock()
 	go logout(l)
 	return
 }
 
-func (l *logger) Panic(v ...interface{}) (err error) {
+func (l *Logger) Panic(v ...interface{}) (err error) {
 	panic(v)
 	return
 
 }
 
-func (l *logger) Fatal(v ...interface{}) (err error) {
+func (l *Logger) Fatal(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: FatalLevel,
 		Time:     time.Now(),
@@ -76,7 +79,7 @@ func (l *logger) Fatal(v ...interface{}) (err error) {
 	return
 }
 
-func (l *logger) Error(v ...interface{}) (err error) {
+func (l *Logger) Error(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: ErrorLevel,
 		Time:     time.Now(),
@@ -84,7 +87,7 @@ func (l *logger) Error(v ...interface{}) (err error) {
 	}
 	return
 }
-func (l *logger) Warn(v ...interface{}) (err error) {
+func (l *Logger) Warn(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: WarnLevel,
 		Time:     time.Now(),
@@ -92,7 +95,7 @@ func (l *logger) Warn(v ...interface{}) (err error) {
 	}
 	return
 }
-func (l *logger) Info(v ...interface{}) (err error) {
+func (l *Logger) Info(v ...interface{}) (err error) {
 	l.Out <- &message{
 		LogLevel: InfoLevel,
 		Time:     time.Now(),
@@ -100,7 +103,7 @@ func (l *logger) Info(v ...interface{}) (err error) {
 	}
 	return
 }
-func (l *logger) Debug(v ...interface{}) (err error) {
+func (l *Logger) Debug(v ...interface{}) (err error) {
 	l.Out <- &message{
 		Time:     time.Now(),
 		LogLevel: DebugLevel,
