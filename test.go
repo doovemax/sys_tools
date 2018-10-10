@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"sync"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(1)
 	log := &clog.Logger{
 		Out:           nil,
 		MaxCache:      1000,
@@ -18,15 +20,20 @@ func main() {
 		LogFileName:   "clog.log",
 		Lock:          &sync.Mutex{},
 		Timezone:      "Local",
+		Sizecron:      0,
+		Timecron:      "*/20 * * * * *",
 	}
 	log.Run()
-
-	// log.Fatal("this is a test")
-	log.Error("this is b test")
-	log.Warn("this is c test")
-	log.Info("this is d test")
-	log.Debug("this is e test")
-
-	time.Sleep(time.Second * 10)
+	for {
+		// log.Fatal("this is a test")
+		log.Error("this is b test")
+		log.Warn("this is c test")
+		log.Info("this is d test")
+		log.Debug("this is e test")
+		// size, _ := file.FileSize("/tmp/clog.log")
+		// if size >= 2048 {
+		time.Sleep(time.Second * 10)
+		// }
+	}
 
 }

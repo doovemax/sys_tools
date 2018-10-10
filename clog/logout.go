@@ -73,6 +73,8 @@ func logout(l *Logger) (err error) {
 			fmt.Fprintf(os.Stdout, "\033[0;32m[%s] [%s]  %s\033[0m\n", msg.Time.In(timeZone).Format("2006-01-02 15:04:05"), "Info", msg.Msg)
 		case DebugLevel:
 			fmt.Fprintf(os.Stdout, "\033[0;35m[%s] [%s]  %s\033[0m\n", msg.Time.In(timeZone).Format("2006-01-02 15:04:05"), "Debug", msg.Msg)
+		case OutChain:
+			break
 		default:
 			fmt.Println(msg, l)
 		}
@@ -103,5 +105,5 @@ func logout(l *Logger) (err error) {
 		}
 
 	}
-	return
+	return nil
 }

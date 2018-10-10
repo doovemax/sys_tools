@@ -1,8 +1,15 @@
 package clog
 
 import (
+	"os"
+	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/robfig/cron"
+
+	"github.com/toolkits/file"
 )
 
 type Level uint
@@ -24,6 +31,8 @@ const (
 	InfoLevel
 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
 	DebugLevel
+	//
+	OutChain
 )
 
 type Logger struct {
@@ -42,9 +51,18 @@ type Logger struct {
 	LogPath string
 	// 日志文件名称
 	LogFileName string
-
-	Lock     sync.Locker
+	// Logger修改锁
+	Lock sync.Locker
+	// 日志使用时区,例如:Asia/Shanghai,默认Local
 	Timezone string
+
+	// 两种Cron只能使用一种,两种都存在默认使用文件大小控制
+	// 根据文件大小控制日志滚动,单位KB
+	Sizecron uint64
+	// 根据时间控制,格式参照https://github.com/robfig/cron
+	Timecron string
+	// 滚动次数
+	scrollingCount int
 }
 
 func (l *Logger) SetMaxCache(n int) (err error) {
@@ -61,6 +79,16 @@ func (l *Logger) Run() (err error) {
 	l.Out = make(chan *message, l.MaxCache)
 	l.Lock.Unlock()
 	go logout(l)
+
+	// 启动日志滚动
+	switch {
+	case l.Sizecron != 0:
+		go l.SizeCron()
+
+	case l.Timecron != "":
+		go l.TimeCron()
+
+	}
 	return
 }
 
@@ -109,6 +137,61 @@ func (l *Logger) Debug(v ...interface{}) (err error) {
 		LogLevel: DebugLevel,
 		Msg:      v,
 	}
+	return
+}
+
+func (l *Logger) LogScrolling() (err error) {
+
+	l.Out <- &message{
+		Time:     time.Now(),
+		LogLevel: OutChain,
+		Msg:      "",
+	}
+	go logout(l)
+
+	return
+
+}
+func (l *Logger) SizeCron() (err error) {
+	// l.Fatal("SizeCron 启动")
+	for {
+		fileSize, err := file.FileSize(filepath.Join(l.LogPath, l.LogFileName))
+		if err != nil {
+			return err
+		}
+		if uint64(fileSize) >= l.Sizecron*1024 {
+			err = os.Rename(filepath.Join(l.LogPath, l.LogFileName), filepath.Join(l.LogPath, l.LogFileName+"."+strconv.Itoa(l.scrollingCount)))
+			if err != nil {
+				return err
+			}
+
+			l.Lock.Lock()
+			l.scrollingCount++
+			l.Lock.Unlock()
+			l.LogScrolling()
+		}
+
+	}
+
+	return nil
+
+}
+
+func (l *Logger) TimeCron() (err error) {
+	c := cron.New()
+	c.AddFunc(l.Timecron, func() {
+		err = os.Rename(filepath.Join(l.LogPath, l.LogFileName), filepath.Join(l.LogPath, l.LogFileName+"."+strconv.Itoa(l.scrollingCount)))
+		if err != nil {
+
+			l.Error("定时任务报错 ", err)
+		}
+		l.Lock.Lock()
+		l.scrollingCount++
+		l.Lock.Unlock()
+		l.LogScrolling()
+
+	})
+	c.Start()
 	return
 }
 
